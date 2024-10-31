@@ -1,19 +1,17 @@
 import axios from "axios";
-
-const appId = process.env.QQ_BOT_APP_ID;
-
-const token = process.env.QQ_BOT_TOKEN;
+import { useAccessToken } from "../utils.js";
 
 const instance = axios.create({
   timeout: 30000,
   withCredentials: true,
-  headers: {
-    Authorization: `Bot ${appId}.${token}`,
-  },
 });
 
 instance.interceptors.request.use(
   (config) => {
+    const { getAccessToken } = useAccessToken();
+    console.log("请求token:", getAccessToken());
+
+    config.headers["Authorization"] = `QQBot ${getAccessToken()}`;
     return config;
   },
   (error) => {
@@ -24,7 +22,7 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => {
     const res = response.data;
-    console.log(res);
+    return res;
   },
   (error) => {
     console.log("error", error);

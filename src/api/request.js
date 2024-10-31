@@ -1,4 +1,4 @@
-import interceptor from "./interceptor";
+import interceptor from "./interceptor.js";
 
 export default {
   get(url, config) {

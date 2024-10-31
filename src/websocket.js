@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import { useAccessToken } from "./utils.js";
-import { sendGroupMsg } from "./api/api.js";
+import { sendGroupMsg, sendGroupFilesMsg } from "./api/api.js";
 
 const { getAccessToken } = useAccessToken();
 
@@ -97,7 +97,39 @@ const login = () => {
 
 const userMsgHandler = async (msg) => {
   const { group_openid, content, id } = msg.d;
-  console.log("收到用户消息：", content);
-  const data = { content: `已收到消息喵: ${content}`, msg_type: 0, msg_id: id };
+  const formatContent = content.trim();
+  if (formatContent === "图片") {
+    sendGroupFilesMsgAsync(msg);
+  } else {
+    sendGroupMsgAsync(msg);
+  }
+};
+
+const sendGroupMsgAsync = async (msg) => {
+  const { group_openid, content, id } = msg.d;
+  const data = {
+    content: `已收到消息喵: ${content}`,
+    msg_type: 0,
+    msg_id: id,
+  };
   await sendGroupMsg(group_openid, data);
+};
+
+const sendGroupFilesMsgAsync = async (msg) => {
+  const { group_openid, id } = msg.d;
+  const data = {
+    file_type: 1,
+    url: "https://img.picui.cn/free/2024/11/01/6723b759a5c0b.jpg",
+    srv_send_msg: false,
+  };
+  const res = await sendGroupFilesMsg(group_openid, data);
+  const { file_info } = res;
+  console.log("文件接口：", res);
+  const _data = {
+    content: " 发送图片喵",
+    msg_type: 7,
+    media: { file_info },
+    msg_id: id,
+  };
+  await sendGroupMsg(group_openid, _data);
 };

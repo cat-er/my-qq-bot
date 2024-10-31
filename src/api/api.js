@@ -15,3 +15,8 @@ export const getWsUrl = () => {
 export const sendGroupMsg = (group_openid, data) => {
   return request.post(`${baseUrl}/v2/groups/${group_openid}/messages`, data);
 };
+
+//发送富文本消息到群
+export const sendGroupFilesMsg = (group_openid, data) => {
+  return request.post(`${baseUrl}/v2/groups/${group_openid}/files`, data);
+};

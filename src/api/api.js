@@ -20,3 +20,8 @@ export const sendGroupMsg = (group_openid, data) => {
 export const sendGroupFilesMsg = (group_openid, data) => {
   return request.post(`${baseUrl}/v2/groups/${group_openid}/files`, data);
 };
+
+// 获取随机图片
+export const getRandomImg = () => {
+  return request.get(`https://www.dmoe.cc/random.php?return=json`);
+};

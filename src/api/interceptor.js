@@ -11,6 +11,10 @@ instance.interceptors.request.use(
     const { getAccessToken } = useAccessToken();
     console.log("请求token:", getAccessToken());
 
+    if (config.reqType === "xunfei") {
+      config.headers["Authorization"] = `Bearer ${process.env.XUNFEI_API_KEY}`;
+      return config;
+    }
     config.headers["Authorization"] = `QQBot ${getAccessToken()}`;
     return config;
   },

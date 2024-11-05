@@ -1,6 +1,11 @@
 import WebSocket from "ws";
 import { useAccessToken } from "./utils.js";
-import { sendGroupMsg, sendGroupFilesMsg, getRandomImg } from "./api/api.js";
+import {
+  sendGroupMsg,
+  sendGroupFilesMsg,
+  getRandomImg,
+  getAiText,
+} from "./api/api.js";
 
 const { getAccessToken } = useAccessToken();
 
@@ -118,13 +123,17 @@ const userMsgHandler = async (msg) => {
   // 去除消息中的空格
   const formatContent = content.trim();
   // 处理指令
-  switch (formatContent) {
-    case "/随机图片":
-      sendRandomImageOrder(msg);
-      break;
-    default:
-      sendUndefinedOrder(msg);
-      break;
+  // if (formatContent === "/随机图片") {
+  //   sendRandomImageOrder(msg);
+  // } else if (formatContent.includes("/ai")) {
+  //   sendXunFeiAi(msg);
+  // } else {
+  //   sendUndefinedOrder(msg);
+  // }
+  if (formatContent === "/随机图片") {
+    sendRandomImageOrder(msg);
+  } else {
+    sendXunFeiAi(msg);
   }
 };
 
@@ -185,6 +194,47 @@ const sendRandomImageOrder = async (msg) => {
       content: "发送图片喵",
       msg_type: 7,
       media: { file_info },
+      msg_id: id,
+    };
+    await sendGroupMsg(group_openid, _data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// 讯飞AI
+const sendXunFeiAi = async (msg) => {
+  const { group_openid, content, id } = msg.d;
+  const formatContent = content.trim();
+
+  const aiMsgData = {
+    model: "4.0Ultra",
+    messages: [
+      {
+        role: "system",
+        content: "你是一个猫娘，你说的每一句话结尾都要带上喵字",
+      },
+      {
+        role: "user",
+        content: formatContent,
+      },
+    ],
+    stream: false,
+  };
+
+  try {
+    let aiResText = "";
+    const aiRes = await getAiText(aiMsgData);
+    if (aiRes.message === "Success") {
+      aiResText = aiRes.choices[0].message.content;
+    } else {
+      aiResText = "AI发生错误喵";
+    }
+
+    // 返回ai结果
+    const _data = {
+      content: aiResText,
+      msg_type: 0,
       msg_id: id,
     };
     await sendGroupMsg(group_openid, _data);

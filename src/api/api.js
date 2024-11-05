@@ -25,3 +25,12 @@ export const sendGroupFilesMsg = (group_openid, data) => {
 export const getRandomImg = () => {
   return request.get(`https://www.dmoe.cc/random.php?return=json`);
 };
+
+// 请求讯飞ai接口
+export const getAiText = (data) => {
+  return request.post(
+    `https://spark-api-open.xf-yun.com/v1/chat/completions`,
+    data,
+    { reqType: "xunfei" }
+  );
+};

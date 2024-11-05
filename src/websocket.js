@@ -101,6 +101,14 @@ export const createWebSocket = (url) => {
       userMsgHandler(msg);
     }
   });
+
+  ws.on("close", () => {
+    console.log("与服务器的连接已关闭");
+  });
+
+  ws.on("error", (err) => {
+    console.error("连接发生错误:", err);
+  });
 };
 
 const login = () => {

@@ -2,7 +2,7 @@ import axios from "axios";
 import { useAccessToken } from "../utils.js";
 
 const instance = axios.create({
-  timeout: 30000,
+  timeout: 120000,
   withCredentials: true,
 });
 

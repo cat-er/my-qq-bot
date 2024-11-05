@@ -25,6 +25,9 @@ let seq;
 // 恢复链接时的session_id参数
 let sessionId;
 
+//是否断线
+let isBreak = false;
+
 export const createWebSocket = (url) => {
   // 创建一个 WebSocket 服务器
   ws = new WebSocket(url);
@@ -43,8 +46,13 @@ export const createWebSocket = (url) => {
     if (!msg) return;
 
     if (msg.op && msg.op === 10) {
-      heartbeatInterval = msg.d.heartbeat_interval;
-      login();
+      if (!isBreak) {
+        heartbeatInterval = msg.d.heartbeat_interval;
+        login();
+      } else {
+        reconnection();
+        isBreak = false;
+      }
     }
 
     if (msg.s) {
@@ -83,7 +91,9 @@ export const createWebSocket = (url) => {
       }, heartbeatInterval);
     }
 
-    if (msg.op == 7 || msg.op == 9) {
+    const breakHandle = () => {
+      console.log("与服务器的连接已关闭");
+      isBreak = true;
       //断线时去掉本次侦听的message事件的侦听器
       ws.removeListener("message", () => {
         console.log(
@@ -94,20 +104,24 @@ export const createWebSocket = (url) => {
         clearInterval(heartbeatIntervalTimer); // 如果已经存在定时器，先清除它
       }
       createWebSocket(wsUrl);
+    };
+
+    if (msg.op == 7 || msg.op == 9) {
+      breakHandle();
     }
 
     //群聊@机器人时触发
     if (msg.t && msg.t === "GROUP_AT_MESSAGE_CREATE") {
       userMsgHandler(msg);
     }
-  });
 
-  ws.on("close", () => {
-    console.log("与服务器的连接已关闭");
-  });
+    ws.on("close", () => {
+      breakHandle();
+    });
 
-  ws.on("error", (err) => {
-    console.error("连接发生错误:", err);
+    ws.on("error", (err) => {
+      console.error("连接发生错误:", err);
+    });
   });
 };
 
@@ -122,6 +136,19 @@ const login = () => {
     },
   };
   console.log("ws登录:", data);
+  ws.send(JSON.stringify(data));
+};
+
+const reconnection = () => {
+  const data = {
+    op: 6,
+    d: {
+      token: `QQBot ${getAccessToken()}`,
+      session_id: sessionId,
+      seq,
+    },
+  };
+  console.log("ws重连:", data);
   ws.send(JSON.stringify(data));
 };
 

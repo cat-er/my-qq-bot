@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import simpleGit from "simple-git";
 import path from "path";
 import { fileURLToPath } from "url";
+import { exec } from "child_process"; // 引入 exec 来执行 shell 命令
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,7 +38,21 @@ app.post("/webhookGitPull", async (req, res) => {
       await git.pull();
 
       console.log("代码更新成功！");
-      res.status(200).send("代码更新成功！");
+
+      // 代码更新后，重启 PM2 管理的应用
+      exec("pm2 restart my-app", (error, stdout, stderr) => {
+        if (error) {
+          console.error(`重启失败: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.error(`stderr: ${stderr}`);
+          return;
+        }
+        console.log(`stdout: ${stdout}`);
+      });
+
+      res.status(200).send("代码更新成功，服务已重启！");
     } catch (error) {
       console.error("Git 拉取失败:", error);
       res.status(500).send("Git 拉取失败");
@@ -52,7 +67,5 @@ const port = 8888;
 app.listen(port, () => {
   console.log(`Webhook 服务器正在监听 ${port} 端口...`);
 });
-
-console.log("测试");
 
 export default app;

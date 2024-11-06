@@ -53,4 +53,6 @@ app.listen(port, () => {
   console.log(`Webhook 服务器正在监听 ${port} 端口...`);
 });
 
+console.log("测试");
+
 export default app;

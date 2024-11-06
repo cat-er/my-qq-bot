@@ -40,7 +40,7 @@ app.post("/webhookGitPull", async (req, res) => {
       console.log("代码更新成功！");
 
       // 代码更新后，重启 PM2 管理的应用
-      exec("pm2 restart my-app", (error, stdout, stderr) => {
+      exec("pm2 restart my-qq-bot", (error, stdout, stderr) => {
         if (error) {
           console.error(`重启失败: ${error.message}`);
           return;

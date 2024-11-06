@@ -62,7 +62,7 @@ app.post("/webhookGitPull", async (req, res) => {
   }
 });
 
-console.log("测试");
+console.log("测试123");
 
 // 启动服务器
 const port = 8888;

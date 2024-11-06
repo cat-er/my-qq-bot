@@ -85,4 +85,6 @@ startServer().catch((error) => {
   console.error("Error starting server:", error);
 });
 
+console.log("测试");
+
 export default app;

@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import simpleGit from "simple-git";
 import path from "path";
 import { fileURLToPath } from "url";
+import net from "net";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,9 +11,30 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const git = simpleGit();
 
-// Git 仓库路径
-// https://github.com/cat-er/my-qq-bot.git
-const repoPath = "https://github.com/cat-er/my-qq-bot.git"; // 替换为你的仓库路径
+// Git 仓库路径（本地路径而不是远程 URL）
+const repoPath = path.join(__dirname, "my-qq-bot"); // 替换为你本地的仓库路径
+
+// 检查端口是否被占用
+const isPortInUse = (port) => {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.unref();
+    server.on("error", () => resolve(true)); // 如果端口被占用
+    server.listen(port, () => {
+      server.close();
+      resolve(false); // 如果端口未被占用
+    });
+  });
+};
+
+// 获取可用端口
+const findAvailablePort = async (startPort) => {
+  let port = startPort;
+  while (await isPortInUse(port)) {
+    port++;
+  }
+  return port;
+};
 
 // 监听 GitHub 的 Webhook 请求
 app.use(bodyParser.json());
@@ -48,10 +70,19 @@ app.post("/webhookGitPull", async (req, res) => {
   }
 });
 
-// 启动服务器
-const port = 3000;
-app.listen(port, () => {
-  console.log(`Webhook 服务器正在监听 ${port} 端口...`);
+// 启动服务器并检查端口
+const startServer = async () => {
+  const startPort = 3000; // 初始端口
+  const port = await findAvailablePort(startPort); // 获取可用端口
+
+  // 启动服务器
+  app.listen(port, () => {
+    console.log(`Webhook 服务器正在监听 ${port} 端口...`);
+  });
+};
+
+startServer().catch((error) => {
+  console.error("Error starting server:", error);
 });
 
 export default app;

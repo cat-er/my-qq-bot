@@ -3,7 +3,6 @@ import bodyParser from "body-parser";
 import simpleGit from "simple-git";
 import path from "path";
 import { fileURLToPath } from "url";
-import net from "net";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,7 +11,7 @@ const app = express();
 const git = simpleGit();
 
 // Git 仓库路径
-const repoPath = path.join(__dirname, "my-qq-bot"); // 替换为你的仓库路径
+const repoPath = "/root/workspace/my-qq-bot";
 
 // 监听 GitHub 的 Webhook 请求
 app.use(bodyParser.json());

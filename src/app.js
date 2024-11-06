@@ -1,4 +1,5 @@
 import "dotenv/config";
+import "./webhook.js";
 
 import { useAccessToken, getWsUrlAsync } from "./utils.js";
 import { createWebSocket } from "./websocket.js";

@@ -53,3 +53,5 @@ const port = 3000;
 app.listen(port, () => {
   console.log(`Webhook 服务器正在监听 ${port} 端口...`);
 });
+
+export default app;

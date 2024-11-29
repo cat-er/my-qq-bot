@@ -282,12 +282,12 @@ const sendRandomMeme = async (msg) => {
 // getDailyNews
 const sendDailyNews = async (msg) => {
   try {
-    const news = await getDailyNews();
+    // const news = await getDailyNews();
 
     const { group_openid, id } = msg.d;
     const data = {
       file_type: 1,
-      url: news,
+      url: 'https://api.03c3.cn/api/zb',
       srv_send_msg: false,
     };
     const res = await sendGroupFilesMsg(group_openid, data);

@@ -6,6 +6,7 @@ import {
   getRandomImg,
   getAiText,
   getMeme,
+  getDailyNews,
 } from "./api/api.js";
 
 const { getAccessToken } = useAccessToken();
@@ -144,6 +145,8 @@ const userMsgHandler = async (msg) => {
     sendRandomImageOrder(msg);
   } else if (formatContent === "/随机meme") {
     sendRandomMeme(msg);
+  } else if (formatContent === "/日报") {
+    sendDailyNews(msg);
   } else {
     sendXunFeiAi(msg);
   }
@@ -265,6 +268,33 @@ const sendRandomMeme = async (msg) => {
 
     const _data = {
       content: "meme来了喵",
+      msg_type: 7,
+      media: { file_info },
+      msg_id: id,
+    };
+    await sendGroupMsg(group_openid, _data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// 每日早报
+// getDailyNews
+const sendDailyNews = async (msg) => {
+  try {
+    const news = await getDailyNews();
+
+    const { group_openid, id } = msg.d;
+    const data = {
+      file_type: 1,
+      url: news,
+      srv_send_msg: false,
+    };
+    const res = await sendGroupFilesMsg(group_openid, data);
+    const { file_info } = res;
+
+    const _data = {
+      content: "日报来了喵",
       msg_type: 7,
       media: { file_info },
       msg_id: id,

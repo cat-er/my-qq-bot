@@ -39,3 +39,12 @@ export const getAiText = (data) => {
 export const getMeme = () => {
   return request.get(`https://tea.qingnian8.com/api/geng/random?pageSize=1`);
 };
+
+// 每日早报
+export const getDailyNews = () => {
+  // return request.post(`https://v2.alapi.cn/api/zaobao`, {
+  //   token: "StsX9KG6uc8AKi9M",
+  //   format: "image",
+  // });
+  return request.get(`https://api.03c3.cn/api/zb`);
+};

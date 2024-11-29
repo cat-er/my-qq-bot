@@ -5,6 +5,7 @@ import {
   sendGroupFilesMsg,
   getRandomImg,
   getAiText,
+  getMeme,
 } from "./api/api.js";
 
 const { getAccessToken } = useAccessToken();
@@ -141,6 +142,8 @@ const userMsgHandler = async (msg) => {
 
   if (formatContent === "/随机图片") {
     sendRandomImageOrder(msg);
+  } else if (formatContent === "/随机meme") {
+    sendRandomMeme(msg);
   } else {
     sendXunFeiAi(msg);
   }
@@ -245,13 +248,29 @@ const sendXunFeiAi = async (msg) => {
   }
 };
 
-// 处理未定义的指令
-const sendUndefinedOrder = async (msg) => {
-  const { group_openid, content, id } = msg.d;
-  const data = {
-    content: `未定义的指令喵: ${content}`,
-    msg_type: 0,
-    msg_id: id,
-  };
-  await sendGroupMsg(group_openid, data);
+// 随机meme图
+const sendRandomMeme = async (msg) => {
+  try {
+    const memeData = await getMeme();
+    const memeUrl = memeData.data[0].url;
+
+    const { group_openid, id } = msg.d;
+    const data = {
+      file_type: 1,
+      url: memeUrl,
+      srv_send_msg: false,
+    };
+    const res = await sendGroupFilesMsg(group_openid, data);
+    const { file_info } = res;
+
+    const _data = {
+      content: "meme来了喵",
+      msg_type: 7,
+      media: { file_info },
+      msg_id: id,
+    };
+    await sendGroupMsg(group_openid, _data);
+  } catch (error) {
+    console.error(error);
+  }
 };

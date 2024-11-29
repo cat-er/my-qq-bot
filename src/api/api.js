@@ -34,3 +34,8 @@ export const getAiText = (data) => {
     { reqType: "xunfei" }
   );
 };
+
+// 获取随机meme图 单IP一天50条
+export const getMeme = () => {
+  return request.get(`https://tea.qingnian8.com/api/geng/random?pageSize=1`);
+};

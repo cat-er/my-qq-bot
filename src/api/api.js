@@ -42,9 +42,5 @@ export const getMeme = () => {
 
 // 每日早报
 export const getDailyNews = () => {
-  // return request.post(`https://v2.alapi.cn/api/zaobao`, {
-  //   token: "StsX9KG6uc8AKi9M",
-  //   format: "image",
-  // });
-  return request.get(`https://api.03c3.cn/api/zb`);
+  return `https://api.03c3.cn/api/zb`;
 };

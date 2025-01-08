@@ -42,5 +42,5 @@ export const getMeme = () => {
 
 // 每日早报
 export const getDailyNews = () => {
-  return `https://dayu.qqsuu.cn/weiyujianbao/apis.php`;
+  return `https://v2.alapi.cn/api/zaobao?token=StsX9KG6uc8AKi9M&format=image`;
 };

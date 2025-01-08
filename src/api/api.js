@@ -42,5 +42,5 @@ export const getMeme = () => {
 
 // 每日早报
 export const getDailyNews = () => {
-  return `https://api.03c3.cn/api/zb`;
+  return `https://dayu.qqsuu.cn/weiyujianbao/apis.php`;
 };

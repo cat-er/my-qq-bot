@@ -7,6 +7,7 @@ import {
   getAiText,
   getMeme,
   getDailyNews,
+  getDeepseekAi,
 } from "./api/api.js";
 
 const { getAccessToken } = useAccessToken();
@@ -148,7 +149,8 @@ const userMsgHandler = async (msg) => {
   } else if (formatContent === "/日报") {
     sendDailyNews(msg);
   } else {
-    sendXunFeiAi(msg);
+    // sendXunFeiAi(msg);
+    sendDeepSeekAi(msg);
   }
 };
 
@@ -240,6 +242,28 @@ const sendXunFeiAi = async (msg) => {
       aiResText = "AI发生错误喵";
     }
 
+    const _data = {
+      content: aiResText,
+      msg_type: 0,
+      msg_id: id,
+    };
+    await sendGroupMsg(group_openid, _data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// deepseek ai指令处理
+const sendDeepSeekAi = async (msg) => {
+  const { group_openid, content, id } = msg.d;
+  const formatContent = content.trim();
+
+  try {
+    let aiResText = "";
+    const aiRes = await getDeepseekAi(formatContent);
+    console.log("ai响应：", aiRes);
+    console.log("ai返回内容：", aiRes.choices[0].message);
+    aiResText = aiRes.choices[0].message.content;
     const _data = {
       content: aiResText,
       msg_type: 0,

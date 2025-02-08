@@ -1,11 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import simpleGit from "simple-git";
-import path from "path";
-import { fileURLToPath } from "url";
 import { exec } from "child_process"; // 引入 exec 来执行 shell 命令
-
-const __filename = fileURLToPath(import.meta.url);
 
 const app = express();
 const git = simpleGit();

@@ -12,7 +12,7 @@ const app = express();
 const git = simpleGit();
 
 // Git 仓库路径
-const repoPath = "/root/workspace/my-qq-bot";
+const repoPath = "/home/lighthouse/my-qq-bot";
 
 // 监听 GitHub 的 Webhook 请求
 app.use(bodyParser.json());

@@ -6,7 +6,6 @@ import { fileURLToPath } from "url";
 import { exec } from "child_process"; // 引入 exec 来执行 shell 命令
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const git = simpleGit();

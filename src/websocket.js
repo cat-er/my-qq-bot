@@ -149,8 +149,8 @@ const userMsgHandler = async (msg) => {
   } else if (formatContent === "/日报") {
     sendDailyNews(msg);
   } else {
-    // sendXunFeiAi(msg);
-    sendDeepSeekAi(msg);
+    sendXunFeiAi(msg);
+    // sendDeepSeekAi(msg);
   }
 };
 

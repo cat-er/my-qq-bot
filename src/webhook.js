@@ -58,7 +58,7 @@ app.post("/webhookGitPull", async (req, res) => {
 });
 
 // 启动服务器
-const port = 8888;
+const port = 7777;
 app.listen(port, () => {
   console.log(`Webhook 服务器正在监听 ${port} 端口...`);
 });

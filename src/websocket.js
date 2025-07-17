@@ -132,6 +132,16 @@ const reconnection = () => {
   ws.send(JSON.stringify(data));
 };
 
+// 清除对话历史记录
+const clearChatHistory = async (msg) => {
+  aiChatHistory.length = 0; // 清空数组
+  await sendGroupMsgWrapper(msg.d.group_openid, {
+    content: "已清除所有对话历史记录喵~",
+    msg_type: 0,
+    msg_id: msg.d.id,
+  });
+};
+
 const userMsgHandler = async (msg) => {
   const { content } = msg.d;
   const formatContent = content.trim();
@@ -139,6 +149,7 @@ const userMsgHandler = async (msg) => {
     "/随机图片": sendRandomImageOrder,
     "/随机meme": sendRandomMeme,
     "/日报": sendDailyNews,
+    "/清除对话记录": clearChatHistory,
   };
   if (commandMap[formatContent]) {
     commandMap[formatContent](msg);
@@ -234,7 +245,7 @@ const AI_CONFIG = {
   MAX_TOKENS: 1000,
   SYSTEM_ROLE: "system",
   USER_ROLE: "user",
-  ASSISTANT_ROLE: "assistant"
+  ASSISTANT_ROLE: "assistant",
 };
 
 // ai对话历史记录
@@ -246,7 +257,8 @@ const manageHistory = (role, content) => {
   aiChatHistory.push({ role, content });
 
   // 如果历史记录过长，只保留最近的记录
-  if (aiChatHistory.length > AI_CONFIG.MAX_HISTORY * 2) { // *2是因为每轮对话包含用户和助手各一条
+  if (aiChatHistory.length > AI_CONFIG.MAX_HISTORY * 2) {
+    // *2是因为每轮对话包含用户和助手各一条
     aiChatHistory.splice(0, 2); // 每次删除最早的一轮对话
   }
 };
@@ -278,11 +290,13 @@ const sendXunFeiAi = async (msg) => {
       model: AI_CONFIG.MODEL,
       messages: [
         { role: AI_CONFIG.SYSTEM_ROLE, content: aiOrder },
-        ...aiChatHistory
+        ...aiChatHistory,
       ],
       stream: false,
-      max_tokens: AI_CONFIG.MAX_TOKENS
+      max_tokens: AI_CONFIG.MAX_TOKENS,
     };
+
+    console.log("当前所有对话:", aiChatHistory);
 
     // 发送请求并验证响应
     const aiRes = await getAiText(aiMsgData);
@@ -295,9 +309,8 @@ const sendXunFeiAi = async (msg) => {
     await sendGroupMsgWrapper(group_openid, {
       content: aiContent,
       msg_type: 0,
-      msg_id: id
+      msg_id: id,
     });
-
   } catch (error) {
     console.error("AI处理失败:", error);
     let errorMsg = "AI思考太久了喵~";

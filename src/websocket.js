@@ -241,7 +241,7 @@ const sendGroupImage = async (msg, url, content = "图片来了喵") => {
 // AI配置
 const AI_CONFIG = {
   MAX_HISTORY: 10, // 保留最近10轮对话
-  MODEL: "x1",
+  MODEL: "4.0Ultra",
   MAX_TOKENS: 1000,
   SYSTEM_ROLE: "system",
   USER_ROLE: "user",
@@ -294,6 +294,15 @@ const sendXunFeiAi = async (msg) => {
       ],
       stream: false,
       max_tokens: AI_CONFIG.MAX_TOKENS,
+      tools: [
+        {
+          type: "web_search",
+          web_search: {
+            enable: true,
+            search_mode: "deep",
+          },
+        },
+      ],
     };
 
     console.log("当前所有对话:", aiChatHistory);

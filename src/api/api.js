@@ -32,7 +32,7 @@ export const getRandomImg = () => {
 // 请求讯飞ai接口
 export const getAiText = (data) => {
   return request.post(
-    `https://spark-api-open.xf-yun.com/v2/chat/completions`,
+    `https://spark-api-open.xf-yun.com/v1/chat/completions`,
     data,
     { reqType: "xunfei" }
   );

@@ -12,7 +12,6 @@ import {
 
 const { getAccessToken } = useAccessToken();
 
-
 let ws;
 let wsUrl;
 let heartbeatInterval = 0; // 心跳周期
@@ -51,7 +50,6 @@ export const createWebSocket = (url) => {
     console.log("已连接到 WebSocket 服务器:");
   });
 
-
   // 接收消息
   ws.on("message", (message) => {
     const msg = JSON.parse(message);
@@ -77,8 +75,12 @@ export const createWebSocket = (url) => {
       sendHeartbeat();
     } else {
       // 周期发送心跳
-      if (heartbeatIntervalTimer !== null) clearInterval(heartbeatIntervalTimer);
-      heartbeatIntervalTimer = setInterval(() => sendHeartbeat(seq), heartbeatInterval);
+      if (heartbeatIntervalTimer !== null)
+        clearInterval(heartbeatIntervalTimer);
+      heartbeatIntervalTimer = setInterval(
+        () => sendHeartbeat(seq),
+        heartbeatInterval
+      );
     }
 
     // 断线处理
@@ -95,7 +97,6 @@ export const createWebSocket = (url) => {
   });
 };
 
-
 const breakHandle = () => {
   console.log("与服务器的连接已关闭");
   isBreak = true;
@@ -103,7 +104,6 @@ const breakHandle = () => {
   ws.removeAllListeners(); // 移除所有监听器
   createWebSocket(wsUrl); // 重连
 };
-
 
 const login = () => {
   const data = {
@@ -119,7 +119,6 @@ const login = () => {
   ws.send(JSON.stringify(data));
 };
 
-
 const reconnection = () => {
   const data = {
     op: 6,
@@ -132,7 +131,6 @@ const reconnection = () => {
   console.log("ws重连:", data);
   ws.send(JSON.stringify(data));
 };
-
 
 const userMsgHandler = async (msg) => {
   const { content } = msg.d;
@@ -150,7 +148,6 @@ const userMsgHandler = async (msg) => {
   }
 };
 
-
 // 发送文本消息
 const sendGroupMsgAsync = async (msg) => {
   const { group_openid, content, id } = msg.d;
@@ -161,7 +158,6 @@ const sendGroupMsgAsync = async (msg) => {
   };
   await sendGroupMsgWrapper(group_openid, data);
 };
-
 
 // 发送媒体消息
 const sendGroupFilesMsgAsync = async (msg) => {
@@ -182,11 +178,11 @@ const sendGroupFilesMsgAsync = async (msg) => {
   await sendGroupMsgWrapper(group_openid, _data);
 };
 
-
 // 随机图片指令处理
 const sendRandomImageOrder = async (msg) => {
   try {
-    const defaultImgUrl = "https://img.picui.cn/free/2024/11/01/6723b759a5c0b.jpg";
+    const defaultImgUrl =
+      "https://img.picui.cn/free/2024/11/01/6723b759a5c0b.jpg";
     const imgData = await getRandomImg();
     const imgUrl = imgData?.imgurl || defaultImgUrl;
     await sendGroupImage(msg, imgUrl, "发送图片喵");
@@ -231,36 +227,91 @@ const sendGroupImage = async (msg, url, content = "图片来了喵") => {
   }
 };
 
+// AI配置
+const AI_CONFIG = {
+  MAX_HISTORY: 10, // 保留最近10轮对话
+  MODEL: "x1",
+  MAX_TOKENS: 1000,
+  SYSTEM_ROLE: "system",
+  USER_ROLE: "user",
+  ASSISTANT_ROLE: "assistant"
+};
+
+// ai对话历史记录
+const aiChatHistory = [];
+
+// 管理对话历史
+const manageHistory = (role, content) => {
+  // 添加新消息
+  aiChatHistory.push({ role, content });
+
+  // 如果历史记录过长，只保留最近的记录
+  if (aiChatHistory.length > AI_CONFIG.MAX_HISTORY * 2) { // *2是因为每轮对话包含用户和助手各一条
+    aiChatHistory.splice(0, 2); // 每次删除最早的一轮对话
+  }
+};
+
+// 验证AI响应内容
+const validateAiResponse = (aiRes) => {
+  if (!aiRes || aiRes.message !== "Success") {
+    throw new Error("AI_RESPONSE_ERROR");
+  }
+
+  if (!aiRes.choices?.[0]?.message?.content) {
+    throw new Error("AI_CONTENT_EMPTY");
+  }
+
+  return aiRes.choices[0].message.content;
+};
 
 // 讯飞AI指令处理
 const sendXunFeiAi = async (msg) => {
   const { group_openid, content, id } = msg.d;
-  const formatContent = content.trim();
-  const aiMsgData = {
-    model: "4.0Ultra",
-    messages: [
-      { role: "system", content: aiOrder },
-      { role: "user", content: formatContent },
-    ],
-    stream: false,
-  };
+  const userContent = content.trim();
+
   try {
-    const aiRes = await getAiText(aiMsgData);
-    if (aiRes.message !== "Success") {
-      throw new Error("AI响应异常");
-    }
-    const _data = {
-      content: aiRes.choices[0].message.content,
-      msg_type: 0,
-      msg_id: id,
+    // 添加用户消息到历史
+    manageHistory(AI_CONFIG.USER_ROLE, userContent);
+
+    // 构建AI请求数据
+    const aiMsgData = {
+      model: AI_CONFIG.MODEL,
+      messages: [
+        { role: AI_CONFIG.SYSTEM_ROLE, content: aiOrder },
+        ...aiChatHistory
+      ],
+      stream: false,
+      max_tokens: AI_CONFIG.MAX_TOKENS
     };
-    await sendGroupMsgWrapper(group_openid, _data);
+
+    // 发送请求并验证响应
+    const aiRes = await getAiText(aiMsgData);
+    const aiContent = validateAiResponse(aiRes);
+
+    // 添加AI响应到历史
+    manageHistory(AI_CONFIG.ASSISTANT_ROLE, aiContent);
+
+    // 发送响应到群
+    await sendGroupMsgWrapper(group_openid, {
+      content: aiContent,
+      msg_type: 0,
+      msg_id: id
+    });
+
   } catch (error) {
     console.error("AI处理失败:", error);
-    await sendErrorMsg(msg, "AI思考太久了喵~");
+    let errorMsg = "AI思考太久了喵~";
+
+    // 根据错误类型返回不同提示
+    if (error.message === "AI_RESPONSE_ERROR") {
+      errorMsg = "AI好像不太舒服喵~ (AI_RESPONSE_ERROR)";
+    } else if (error.message === "AI_CONTENT_EMPTY") {
+      errorMsg = "AI没想出来要说什么喵~ (AI_CONTENT_EMPTY)";
+    }
+
+    await sendErrorMsg(msg, errorMsg);
   }
 };
-
 
 // deepseek ai指令处理
 const sendDeepSeekAi = async (msg) => {
@@ -283,7 +334,6 @@ const sendDeepSeekAi = async (msg) => {
   }
 };
 
-
 // 随机meme图
 const sendRandomMeme = async (msg) => {
   try {
@@ -297,7 +347,6 @@ const sendRandomMeme = async (msg) => {
     await sendErrorMsg(msg, "获取meme失败了喵~");
   }
 };
-
 
 // 每日早报
 const sendDailyNews = async (msg) => {
